@@ -1,0 +1,14 @@
+<?php if($dba->isLoggedIn()){ ?>
+                <li><a href="./logout.php">Logout</a></li>
+
+                <?php if($dba->isAdmin()){ ?>
+                <li><a href="./brand.php">Marke</a></li>
+
+
+                <?php }?>
+            
+
+            <?php } else {  ?>
+
+
+              <?php } ?>
