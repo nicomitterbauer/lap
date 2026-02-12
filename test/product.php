@@ -20,7 +20,7 @@ if(isset($_POST['bt_add_product'])){
     $uploaddir = 'uploads/';
     $uploadpath = $uploaddir . $originaleFilename;
 
-    $is_removed = false;
+    $is_removed = 0;
 
     if(move_uploaded_file($_FILES['picture']['tmp_name'], $uploadpath)){
         echo 'Datei erfolgreich hochgeladen';
@@ -69,12 +69,12 @@ if(isset($_POST['bt_add_product'])){
 
 }
 
-if(isset($_POST['bt_delete_brand'])){
+if(isset($_POST['bt_delete_product'])){
     $id = trim($_POST['id']);
 
     if(count($errors) == 0) {
-        $dba->deleteBrand($id);
-        header('Location: brand.php');
+        $dba->deleteProduct($id);
+        header('Location: product.php');
         exit();
     }
 
@@ -160,6 +160,7 @@ if(isset($_POST['bt_delete_brand'])){
                     <th>Bild</th>
                     <th>Gelöscht?</th>
                     <th>Lagerbestand</th>
+                    <th>Aktionen</th>
                 </tr>
 
             </thead>
@@ -190,10 +191,16 @@ if(isset($_POST['bt_delete_brand'])){
                     echo '<td>' . htmlspecialchars($category_name) . '</td>';
                     echo '<td>' . htmlspecialchars($p->unit_price) . '</td>';
                     echo '<td>' . htmlspecialchars(($p->is_available ? 'Ja' : 'Nein')) . '</td>';
-                    echo '<td> <img src="' . $p->picture .'" alt="' . $p->title .'" style="with: 2em, height: 2em"></td>';
+                    echo '<td> <img src="' . $p->picture .'" alt="' . $p->title .'" style="with: 2em; height: 2em;"></td>';
                     echo '<td>' . htmlspecialchars(($p->is_removed ? 'Ja' : 'Nein')) . '</td>';
                     echo '<td>' . htmlspecialchars($p->stock) . '</td>';
                     echo '<td>';
+
+                    echo '<a href="edit_product.php?id=' . htmlspecialchars($p->id).'">Bearbeiten</a>';
+                    echo '<form action="product.php" method="POST">';
+                    echo '<input type="hidden" name="id" value="' . htmlspecialchars($p->id). '">';
+                    echo '<button name="bt_delete_product">Löschen</button>';
+                    echo '</form>';
                     echo '</td>';
                     echo'</tr>';
 

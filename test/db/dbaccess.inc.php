@@ -6,7 +6,7 @@ class DbAccess{
     private PDO $conn;
 
     public function __construct(){
-        $this->conn = new PDO('mysql:host=localhost; dbname=webshop', username: 'root', password: '');
+        $this->conn = new PDO('mysql:host=localhost; dbname=lap', username: 'root', password: '');
         $this->conn->setAttribute(attribute: PDO::ATTR_ERRMODE, value: PDO::ERRMODE_EXCEPTION);
     }
 
@@ -244,9 +244,9 @@ class DbAccess{
         $ps->bindValue('brand_id', $brand_id);
         $ps->bindValue('category_id', $category_id);
         $ps->bindValue('unit_price', $unit_price);
-        $ps->bindValue('is_available', $is_available);
+        $ps->bindValue('is_available', $is_available, PDO::PARAM_BOOL);
         $ps->bindValue('picture', $uploadpath);
-        $ps->bindValue('is_removed', $is_removed);
+        $ps->bindValue('is_removed', $is_removed,PDO::PARAM_BOOL);
         $ps->bindValue('stock', $stock);
         $ps->execute();
 
@@ -264,6 +264,73 @@ class DbAccess{
 
         return $ps->fetchAll(PDO::FETCH_CLASS, Product::class);
     }
+
+    public function getProductById(int $id) : Product|bool {
+        $sql = '
+        SELECT *
+        FROM products
+        WHERE id = :id';
+
+        $ps = $this->conn->prepare($sql);
+        $ps->bindValue('id', $id);
+        $ps->execute();
+
+        return $ps->fetchObject(Product::class);
+    }
+
+    public function deleteProduct(int $id) {
+        $sql = '
+        DELETE FROM products
+        WHERE id = :id';
+
+        $ps = $this->conn->prepare($sql);
+        $ps->bindValue('id', $id);
+        $ps->execute();
+
+    }
+
+    public function getProductByProductnumber(string $newProductnumber): Product|bool {
+        $sql = '
+        SELECT *
+        FROM products
+        WHERE productnumber = :productnumber';
+
+        $ps = $this->conn->prepare($sql);
+        $ps->bindValue('productnumber', $newProductnumber);
+        $ps->execute();
+
+        return $ps->fetchObject(Product::class);
+    }
+
+    public function updateProduct(Product $p) : bool {
+
+    $sql = "
+        UPDATE products
+        SET productnumber = :productnumber,
+            title = :title,
+            description = :description,
+            unit_price = :unit_price,
+            brand_id = :brand_id,
+            category_id = :category_id,
+            is_available = :is_available,
+            stock = :stock
+        WHERE id = :id
+    ";
+
+    $ps = $this->conn->prepare($sql);
+
+    $ps->bindValue(':productnumber', $p->productnumber);
+    $ps->bindValue(':title', $p->title);
+    $ps->bindValue(':description', $p->description);
+    $ps->bindValue(':unit_price', $p->unit_price);
+    $ps->bindValue(':brand_id', $p->brand_id, PDO::PARAM_INT);
+    $ps->bindValue(':category_id', $p->category_id, PDO::PARAM_INT);
+    $ps->bindValue(':is_available', $p->is_available, PDO::PARAM_BOOL);
+    $ps->bindValue(':stock', $p->stock, PDO::PARAM_INT);
+    $ps->bindValue(':id', $p->id, PDO::PARAM_INT);
+
+    return $ps->execute();
+}
 }
 
 
