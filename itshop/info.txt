@@ -1,0 +1,83 @@
+Login & registrierung: 50min
+Brand & Category : 50 min
+Product & edit : 62min
+
+
+
+<?php 
+
+require_once 'maininclude.inc.php';
+
+if(!isset($_SESSION['cart'])){
+    $_SESSION['cart'] = [];
+}
+
+if(isset($_POST['bt_cart'])){
+    $product_id = (int)$_POST['product_id'];
+    $quantity = (int) $_POST['quantity'];
+
+    if ($product_id < 1) {
+        $errors[] = 'Produkt ID falsch!';
+    } elseif (!filter_var($product_id, FILTER_VALIDATE_INT)) {
+        $errors[] = 'Produkt ID muss eine Zahl sein!';
+    }
+
+    if ($quantity < 1) {
+        $errors[] = 'Menge muss mind. 1 sein!';
+    } elseif (!filter_var($quantity, FILTER_VALIDATE_INT)) {
+        $errors[] = 'Menge muss eine Zahl sein!';
+    }
+
+    $found = false;
+    for($i = 0; $i < count($_SESSION['cart']); $i++){
+        if($_SESSION['cart']['$i']['product_id'] == $product_id){
+           $_SESSION['cart']['$i']['quantity'] += $quantity;
+           $found = true;
+           break;
+        }
+    }
+
+    if($found === false){
+        $entry =[];
+        $entry['product_id'] = $product_id;
+        $entry['quantity'] = $quantity;
+        $_SESSION['cart'][] = $entry;
+    }
+    header('Location: cart.php');
+    exit();
+
+    if(isset($_POST['bt_delete'])){
+        $id = $_POST['id'];
+        for($i = 0; $i < count($_SESSION['cart']); $i++){
+            if($_SESSION['cart']['$i']['product_id'] == $id){
+                array_splice($_SESSION['cart'], $i, 1);
+                header('Location: cart.php');
+                exit();
+            }
+        }
+    }
+
+}
+
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+<body>
+    <section>
+        <?php include 'header.inc.php'; ?>
+        <h2>Übersicht</h2>
+        <?php include 'showerrors.inc.php'; ?>
+
+
+    </section>
+    
+</body>
+</html>

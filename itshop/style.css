@@ -1,0 +1,65 @@
+body {
+    font-family: Helvetica;
+
+}
+
+.navbar ul {
+    list-style: none;   /* Punkte weg */
+    margin: 0;
+    padding: 0;
+
+    display: flex;      /* <-- DAS macht sie nebeneinander */
+    gap: 25px;          /* Abstand */
+}
+
+.logout {
+    margin-left: auto;  /* <-- schiebt alles nach rechts */
+}
+
+.navbar a {
+    text-decoration: none;
+    color: white;
+}
+
+.navbar {
+    background-color: #333232;
+    padding: 15px;
+}
+
+
+
+
+
+
+
+.picture{
+    max-height: auto;
+    max-width: 10em;
+    border-radius: 0.5em;
+}
+
+.product-list {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+}
+
+.product-card {
+    border: 1px solid #ccc;
+    padding: 15px;
+    width: 200px;
+    border-radius: 1em;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center; /
+}
+
+.product-card a {
+    text-decoration: none;
+    color: black;
+}
+
+.product-card a:hover {
+    color: #007bff;
+}
