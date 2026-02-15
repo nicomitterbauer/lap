@@ -18,6 +18,9 @@ if(!$p){
     exit('Produkt existiert nicht');
 }
 
+$c = $dba->getCategoryById($p->category_id);
+$b = $dba->getBrandById($p->brand_id);
+
 
 ?>
 
@@ -35,13 +38,29 @@ if(!$p){
         <h2>Übersicht</h2>
         <?php include 'showerrors.inc.php'; ?>
 
-        <p><img src="<?= $p->picture ?>" alt="" class="picture"></p>
+        <img src="<?= $p->picture ?>" alt="" class="picture">
 
-        <p><?= htmlspecialchars(number_format($p->price, 2, ',', '.')) ?> EUR</p>
+        <Label>Kategorie:</Label>
+        <?= htmlspecialchars($c->name) ?>
+
+        <Label>Marke</Label>
+        <?= htmlspecialchars($b->name) ?>
+
+        <Label>Titel:</Label>
         <?= htmlspecialchars($p->title) ?>
+
+        <Label>Artikelnr:</Label>
+        <?= htmlspecialchars($p->productnumber) ?>
+
+        <Label>Beschreibung:</Label>
         <?= htmlspecialchars($p->description) ?>
-        Lagerbstand: <?= htmlspecialchars($p->stock) ?>
-        <?= htmlspecialchars($p->id) ?>
+
+        <Label>Lagerbestand:</Label>
+        <?= htmlspecialchars($p->stock) ?>
+
+        <Label>Preis:</Label>
+        <?= htmlspecialchars(number_format($p->price, 2, ',', '.')) ?> EUR
+        
 
         <form action="cart.php" method="POST">
             <input type="hidden" name="product_id" value="<?= htmlspecialchars($p->id) ?>">
