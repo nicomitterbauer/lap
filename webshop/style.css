@@ -1,0 +1,42 @@
+
+* {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+main {
+    margin: 0 auto;
+    max-width: 1000px;
+}
+
+main header nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 8px;
+}
+
+main header nav ul li a {
+    color: black;
+}
+
+.product-list {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.product-card {
+    border: 1px solid #ccc;
+    padding: 15px;
+    width: 200px;
+}
+
+.product-card a {
+    text-decoration: none;
+    color: black;
+}
+
+.product-card a:hover {
+    color: #007bff;
+}

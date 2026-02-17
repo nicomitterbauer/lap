@@ -1,95 +1,92 @@
 <?php
-require_once 'maininclude.php';
+require_once 'maininclude.inc.php';
 
-if ($dba->isAdmin() === false) {
-    header('Location: index.php');
-}
+if(isset($_POST['bt_create_brand'])){
+    $brand_name = trim($_POST['brand_name']);
 
-if (isset($_POST['bt_brand'])) {
-    $name = trim($_POST['name']);
-
-    if (empty($name)) {
-        $errors[] = 'Marke darf nicht leer sein!';
-    }
-    if ($dba->getBrandByName($name) === true) {
-        $errors[] = 'Marke bereits vorhanden!';
+    if(empty($brand_name)){
+        $errors[] = 'Markennamen einegeben';
+    }else if ($dba->getBrandByName($brand_name) !== false){
+        $errors[] = 'Bezeichnung bereits vorhanden';
     }
 
-    if (count($errors) === 0) {
-        $dba->createBrand($name);
+    if(count($errors) == 0){
+        $dba->createBrand($brand_name);
         header('Location: brand.php');
         exit();
     }
 }
 
-if(isset($_POST['bt_delete'])){
-    $dba->deleteBrand($_POST['id']);
+if(isset($_POST['bt_delete_brand'])){
+        $id = $_POST['id'];
+        $dba->deleteBrand($id);
+    
     header('Location: brand.php');
     exit();
 }
+
+
 
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brand</title>
-    <link rel="stylesheet" href="stylesheet.css">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <main>
-        <?php include 'header.php'; ?>
-        <section>
-            <?php include 'showerrors.php'; ?>
-            <h1>Marke hinzufügen!</h1>
+        <?php include 'header.inc.php'; ?>
+            <section>
+                <h2>Werkzeugwelt</h2>
+                <?php include 'showerrors.inc.php'; ?>
+                <h3>Marke Hinzufügen</h3>
+                <form action="brand.php" method="post">
+                    <label> Markenname</label><br>
+                    <input type="text" name="brand_name" required><br>
+                    <button name="bt_create_brand">Marke erstellen</button>
+                </form>
 
-            <form action="brand.php" method="POST">
-                <label>Markenname:</label><br>
-                <input type="text" name="name"><br>
+                <h3>Marken</h3>
+                <?php $brands = $dba->getAllBrands();?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        foreach($brands as $b){
+                            echo '<tr>';
+                            echo '<td>' . htmlspecialchars($b->id) . '</td>';
+                            echo '<td>' . htmlspecialchars($b->name) . '</td>';
+                            echo '<td>';
+                            // Bearbeiten Link
+                            echo '<a href="edit_brand.php?id='. htmlspecialchars($b->id).'">Bearbeiten</a> ';
+                            echo '<form method="POST" action="brand.php">';
+                            echo '<input type="hidden" name="id" value="' . htmlspecialchars($b->id) . '">';
+                            echo '<button name="bt_delete_brand">Löschen</button>';
+                            echo '</form>';
+                            echo '</td>';
+                            
+                            echo '</tr>';
+                            
+                        }
 
-                <button type="submit" name="bt_brand">Markennamen anlegen!</button>
+                        ?>
+                    </tbody>
+                </table>
 
-            </form>
-
-            <h2>Bestehende Marken!</h2>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Titel</th>
-                        <th>Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $brands = $dba->getAllBrands();
-                    foreach ($brands as $brand) {
-                        echo '<tr>';
-                        echo '<td>' . htmlspecialchars($brand->id) . '</td>';
-                        echo '<td>' . htmlspecialchars($brand->name) . '</td>';
-
-                        // Bearbeiten
-                        echo '<td>';
-                        echo '<a href="edit_brand.php?id=' . htmlspecialchars($brand->id) . '">Bearbeiten</a>';
-
-                        // Löschen
-                        echo '<form action="brand.php" method="POST">';
-                        echo '<input type="hidden" name="id" value="'.$brand->id.'">';
-                        echo '<button name="bt_delete">Löschen!</button>';
-                        echo '</form>';
-
-                        echo '</tr>';
-                    }
-                    ?>
-                </tbody>
-            </table>
-
-        </section>
+            </section>
     </main>
-</body>
 
+
+
+</body>
 </html>

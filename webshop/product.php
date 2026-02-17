@@ -1,207 +1,189 @@
 <?php
-require_once 'maininclude.php';
+require_once 'maininclude.inc.php';
 
-if ($dba->isAdmin() === false) {
-    header('Location: index.php');
-}
-
-if (isset($_POST['bt_product'])) {
+if(isset($_POST['bt_create'])){
     $title = trim($_POST['title']);
     $description = trim($_POST['description']);
-    $category_id = (int) trim($_POST['category_id']);
-    $brand_id = (int) trim($_POST['brand_id']);
-    $price = trim($_POST['price']);
-    $stock = trim($_POST['stock']);
     $productnumber = trim($_POST['productnumber']);
+    $brand_id = trim($_POST['brand_id']);
+    $category_id = trim($_POST['category_id']);
     $is_available = isset($_POST['is_available']);
+    $price = trim($_POST['price']);
     $is_removed = 0;
 
-    //Bild
-    $filename = $_FILES['picture']['name'];
+
+    $originalFilename = $_FILES['picture']['name'];
+    // Pfad, wo die Datei gespeichert werden soll
     $uploaddir = 'uploads/';
-    $uploadpath = $uploaddir . $filename;
+    $uploadpath = $uploaddir . $originalFilename;
 
-    if (move_uploaded_file($_FILES['picture']['tmp_name'], $uploadpath)) {
-        echo 'Datei erfolgreich hochgeladen!';
+    // Verschiebe die hochgeladene Datei vom temporären Speicherort in unseren uploads-Ordner
+    if(move_uploaded_file($_FILES['picture']['tmp_name'], $uploadpath)){
+        // Alles oky
+        echo "Datei erfolgreich hochgeladen.\n";
     } else {
-        $errors[] = 'Fehler beim Upload!';
+        $errors[] = 'Upload Fehlgeschlagen! Keine Date? Fehlende Rechte am Uploads-Ordner?';
+
     }
 
-    $productByTitle = $dba->getProductByTitel($title);
-    if (empty($title)) {
-        $errors[] = 'Titel darf nicht leer sein!';
-    } else if (!is_string($title)) {
-        $errors[] = 'Titel muss ein Text sein!';
-    } elseif ($productByTitle != false) {
-        $errors[] = 'Titel bereits verwendet!';
+if(empty($title)){
+        $errors[] = 'Titel eingeben';
     }
 
-    if (empty($description)) {
-        $errors[] = 'Beschreibung darf nicht leer sein!';
-    } else if (!is_string($description)) {
-        $errors[] = 'Titel muss ein Text sein!';
+if(empty($description)){
+        $errors[] = 'Beschreibung eingeben';
     }
 
-    if (empty($category_id)) {
-        $errors[] = 'Kategorie darf nicht leer sein!';
+if(empty($productnumber)){
+        $errors[] = 'Aritkelnummer eingeben';
+    }else if ($dba->getProductByProductnumber($productnumber) !== false){
+        $errors[] = 'Bezeichnung bereits vorhanden';
     }
 
-    if (empty($brand_id)) {
-        $errors[] = 'Brand ID darf nicht leer sein!';
+if(empty($brand_id)){
+        $errors[] = 'Marke auswählen';
     }
 
-    if (empty($price)) {
-        $errors[] = 'Preis darf nicht leer sein!';
+if(empty($category_id)){
+        $errors[] = 'Kategorie auswählen';
     }
 
-    $productByProductnumber = $dba->getProductByProductnumber($productnumber);
-    if (empty($productnumber)) {
-        $errors[] = 'Produktnummer darf nicht leer sein!';
-    } else if ($productByProductnumber != false) {
-        $errors[] = 'Produktnummer bereits verwendet!';
-    }
-
-    if (empty($stock)) {
-        $errors[] = 'Lagerbestand darf nicht leer sein!';
-    }
-
-    if (count($errors) === 0) {
-        $dba->createProduct($category_id, $brand_id, $title, $price, $productnumber, $description, $filename, $stock, $is_available, $is_removed);
+if(count($errors) == 0){
+        $dba->createProduct($productnumber, $brand_id, $category_id, $price, $description, $title, $is_available, $uploadpath, $is_removed);
         header('Location: product.php');
         exit();
     }
 
 }
 
-if(isset($_POST['bt_delete'])){
-    $dba->deleteProduct();
+if(isset($_POST['bt_delete_product'])){
+        $id = $_POST['id'];
+        $dba->deleteProduct($id);
+    
     header('Location: product.php');
     exit();
 }
-
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product</title>
-    <link rel="stylesheet" href="stylesheet.css">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <main>
-        <?php include 'header.php'; ?>
-        <section>
-            <?php include 'showerrors.php'; ?>
-            <h1>Produkt hinzufügen!</h1>
+        <?php include 'header.inc.php'; ?>
+            <section>
+                <h2>Werkzeugwelt</h2>
+                <?php include 'showerrors.inc.php'; ?>
 
-            <form action="product.php" method="POST" enctype="multipart/form-data">
-                <label>Titel:</label><br>
-                <input type="text" name="title"><br>
+                <h3>Neues Produkt</h3>
 
-                <label>Beschreibung:</label><br>
-                <input type="text" name="description"><br>
+                <form action="product.php" method="POST" enctype="multipart/form-data">
+                    <label>Titel:</label><br>
+                    <input type="text" name="title"><br>
 
-                <label>Kategorie:</label><br>
-                <select name="category_id">
-                    <?php
-                    $categories = $dba->getAllCategories();
-                    foreach ($categories as $c) {
-                        echo '<option value="' . htmlspecialchars($c->id) . '">' . htmlspecialchars($c->name) . '</option>';
-                    }
-                    ?>
-                </select><br>
+                    <label>Beschreibung:</label><br>
+                    <input type="text" name="description"><br>
 
-                <label>Marke:</label><br>
-                <select name="brand_id">
-                    <?php
-                    $brands = $dba->getAllBrands();
-                    foreach ($brands as $b) {
-                        echo '<option value="' . htmlspecialchars($b->id) . '">' . htmlspecialchars($b->name) . '</option>';
-                    }
+                    <label>Artikelnummer:</label><br>
+                    <input type="text" name="productnumber"><br>
 
-                    ?>
-                </select><br>
+                    <label>Marke</label><br>
+                    <select name="brand_id">
+                        <?php
+                        // Lade alle Marken
+                        $brands = $dba->getAllBrands();
+                        // gebe jede Marke mit <option> aus
+                        // $b Datentyp: Marke
+                        foreach($brands as $b){
+                            echo '<option value="' . htmlspecialchars($b->id) . '">' . htmlspecialchars($b->name) . '</option>';
+                        }
+                        ?>
+                    </select><br>
 
-                <label>Preis:</label><br>
-                <input type="text" name="price"><br>
+                    <label>Kategorie</label><br>
+                    <select name="category_id">
+                        <?php       
+                        $categories = $dba->getAllCategories();
+                        
+                        foreach($categories as $c){
+                            echo '<option value="' . $c->id . '">' . htmlspecialchars($c->name) . '</option>';
+                        }
+                        ?>
+                    </select><br>
 
+                    <label>Preis:</label><br>
+                    <input type="text" name="price"><br>
 
-                <label>Produktnummer:</label><br>
-                <input type="text" name="productnumber"><br>
+                    <label>Verfügbar:</label><br>
+                    <input type="checkbox" name="is_available"><br>
 
-                <label>Lagerbestand:</label><br>
-                <input type="text" name="stock"><br>
+                    <label>Bild </label><br>
+                    <input type="file" name="picture"><br>
 
-                <label>Verfügbar?:</label><br>
-                <input type="checkbox" name="is_available"><br>
+                    <button name="bt_create">Produkt erstellen</button>
+                </form>
 
-                <label>Bild:</label><br>
-                <input type="file" name="picture"><br>
-
-                <button type="submit" name="bt_product">Produkt anlegen!</button>
-
-            </form>
-
-            <h2>Bestehende Produkte:</h2>
+                <h2>Bestehende Produkte</h2>
             <table border="1">
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Titel</th>
-                        <th>Beschreibung</th>
-                        <th>Kategorie</th>
-                        <th>Marke</th>
-                        <th>Preis</th>
-                        <th>Produktnummer</th>
-                        <th>Lagerbestand</th>
-                        <th>Verfügbar?</th>
-                        <th>Bild</th>
-                        <th>Aktionen</th>
+                        <th>TITEL</th>
+                        <th>MARKE</th>
+                        <th>KATEGORIE_ID</th>
+                        <th>PRODUKTNUMMER</th>
+                        <th>PREIS</th>
+                        <th>BESCHREIBUNG</th>
+                        <th>VERFÜGBAR</th>
+                        <th>GELÖSCHT</th>
+                        <th>BILD</th>
+                        <th>AKTIONEN</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
                     $products = $dba->getAllProducts();
-                    foreach ($products as $p) {
+                    foreach($products as $p){
+                        $brand = $dba->getBrandById($p->brand_id);
+                        $brand_name = '';
+                        if($brand != false){
+                            $brand_name = $brand->name;
+                        }
+                        
+                        // Category gehöhrt auch 
+
                         echo '<tr>';
-                        echo '<td>' . htmlspecialchars($p->id) . '</td>';
-                        echo '<td>' . htmlspecialchars($p->title) . '</td>';
-                        echo '<td>' . htmlspecialchars($p->description) . '</td>';
-                        echo '<td>' . htmlspecialchars($dba->getCategoryNameById($p->category_id)) . '</td>';
-                        echo '<td>' . htmlspecialchars($dba->getBrandNameById($p->brand_id)) . '</td>';
-                        echo '<td>' . htmlspecialchars($p->price) . '</td>';
-                        echo '<td>' . htmlspecialchars($p->productnumber) . '</td>';
-                        echo '<td>' . htmlspecialchars($p->stock) . '</td>';
-                        echo '<td>' . htmlspecialchars(($p->is_available) ? "Ja" : "Nein") . '</td>';
-                        echo '<td><img src="uploads/' . $p->picture . '"class="picture"></td>';
-
-                        //Bearbeiten
+                        echo '<td>' . $p->id . '</td>';
+                        echo '<td>' . $p->title . '</td>';
+                        echo '<td>' . $brand_name . '</td>';
+                        echo '<td>' . $p->category_id . '</td>';
+                        echo '<td>' . $p->productnumber . '</td>';
+                        echo '<td>' . $p->price . '</td>';
+                        echo '<td>' . $p->description . '</td>';
+                        echo '<td>' . ($p->is_available ? 'Ja' : 'Nein') . '</td>';
+                        echo '<td>' . ($p->is_removed ? 'Ja' : 'Nein') . '</td>';
+                        echo '<td><img src="' . $p->picture . '" alt="' . $p->title . '" style="max-width:100px; max-height:100px;"></td>';
                         echo '<td>';
-
-                        //Löschen
-                        echo '<form action="product.php" method="POST">';
-                        echo '<input type="hidden" name="id" value="">';
-                        echo '<button name="bt_delete">Löschen</button>';
+                        echo '<a href="edit_product.php?id='. htmlspecialchars($p->id).'">Bearbeiten</a> ';
+                        echo '<form method="POST" action="product.php">';
+                        echo '<input type="hidden" name="id" value="' . htmlspecialchars($p->id) . '">';
+                        echo '<button name="bt_delete_product">Löschen</button>';
                         echo '</form>';
-
-                        echo '</tr>';
-
-
+                        echo '</td>';
                     }
                     ?>
                 </tbody>
+                </table>
 
-
-
-
-        </section>
+            </section>
     </main>
 
 
-</body>
 
+</body>
 </html>

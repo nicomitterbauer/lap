@@ -1,71 +1,69 @@
 <?php
-require_once 'maininclude.php';
-
-if ($dba->isAdmin() === false) {
-    header('Location: index.php');
-}
+require_once 'maininclude.inc.php';
 
 if(!isset($_GET['id'])){
-    exit('Kein gültiger GET Parameter!');
+    exit('Get-Parameter id fehlt');
+}
+if(filter_var($_GET['id'], FILTER_VALIDATE_INT) === false){
+    exit('Get-Parameter id ungültig');
 }
 
-// gibt es für diese ID überhaupt ein Produkt?
-$brand = $dba->getBrandById($_GET['id']);
+$id = $_GET['id'];
+
+$brand = $dba->getBrandById($id);
+
 if($brand === false){
-    exit('Marke nicht gefunden!');
+    exit('Keine Marke mit der ID gefunden');
 }
 
-if (isset($_POST['bt_brand'])) {
-    $new_name = trim($_POST['new_name']);
+if(isset($_POST['bt_update_brand'])){
+    $brand_name = trim($_POST['brand_name']);
 
-    if (empty($new_name)) {
-        $errors[] = 'Marke darf nicht leer sein!';
+    if(empty($brand_name)){
+        $errors[]= 'Kategoriename eingeben';
     }
 
-    $brandByNewName = $dba->getBrandByName($new_name);
-    // ist diese Marke bereits vorhanden?
-    if($brandByNewName != false && $brandByNewName->id != $brand->id){
-        $errors[]='Produkt existiert bereits';
+    if($brand !== false && $brand->id != $id){
+        $errors[] = 'Name bereits vorhanden';
     }
 
-    $brand->name = $new_name;
+    $brand->name = $brand_name;
 
-    if (count($errors) === 0) {
+    if(count($errors) === 0){
         $dba->updateBrand($brand);
         header('Location: brand.php');
         exit();
     }
+
 }
 
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brand-Edit</title>
-    <link rel="stylesheet" href="stylesheet.css">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <main>
-        <?php include 'header.php'; ?>
-        <section>
-            <?php include 'showerrors.php'; ?>
-            <h1>Marke Bearbeiten!</h1>
-
-            <form action="edit_brand.php?id=<?php echo $brand->id ?>" method="POST">
-                <label>Neuer Markenname:</label><br>
-                <input type="text" name="new_name" value="<?php echo $brand->name ?>"><br>
-
-                <button type="submit" name="bt_brand">Speichern!</button>
-
-            </form>
-
-        </section>
+        <?php include 'header.inc.php'; ?>
+            <section>
+                <h2>Werkzeugwelt</h2>
+                <?php include 'showerrors.inc.php'; ?>
+                
+                <h3>Marke Bearbeiten</h3>
+                <form action="edit_brand.php?id=<?php echo htmlspecialchars($brand->id); ?>" method="POST">
+                    <label>Name:</label><br>
+                    <input type="text" name="brand_name" value="<?php echo htmlspecialchars($brand->name); ?>"><br>
+                    <button name="bt_update_brand">Bearbeiten</button>
+                </form>
+            </section>
     </main>
-</body>
 
+
+
+</body>
 </html>

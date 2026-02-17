@@ -1,29 +1,26 @@
 <?php
-require_once 'maininclude.php';
+require_once 'maininclude.inc.php';
 
-if ($dba->isAdmin() === false) {
-    header('Location: index.php');
-}
+if(isset($_POST['bt_create_category'])){
+    $category_name = trim($_POST['category_name']);
 
-if (isset($_POST['bt_category'])) {
-    $name = trim($_POST['name']);
-
-    if (empty($name)) {
-        $errors[] = 'Kategorie darf nicht leer sein!';
-    }
-    if ($dba->getCategoryByName($name) === true) {
-        $errors[] = 'Kategorie bereits vorhanden!';
+    if(empty($category_name)){
+        $errors[] = 'Kategoriename eingeben';
+    }else if ($dba->getCategoryByName($category_name) !== false){
+        $errors[] = 'Bezeichnung bereits vorhanden';
     }
 
-    if (count($errors) === 0) {
-        $dba->createCategory($name);
+    if(count($errors) == 0){
+        $dba->createCategory($category_name);
         header('Location: category.php');
         exit();
     }
 }
 
-if(isset($_POST['bt_delete'])){
-    $dba->deleteCategory($_POST['id']);
+if(isset($_POST['delete_c'])){
+        $id = $_POST['id'];
+        $dba->deleteCategory($id);
+    
     header('Location: category.php');
     exit();
 }
@@ -32,64 +29,62 @@ if(isset($_POST['bt_delete'])){
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kategorie</title>
-    <link rel="stylesheet" href="stylesheet.css">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <main>
-        <?php include 'header.php'; ?>
-        <section>
-            <?php include 'showerrors.php'; ?>
-            <h1>Kategorie hinzufügen!</h1>
+        <?php include 'header.inc.php'; ?>
+            <section>
+                <h2>Kategorie</h2>
+                <?php include 'showerrors.inc.php'; ?>
 
-            <form action="category.php" method="POST">
-                <label>Kategoriename:</label><br>
-                <input type="text" name="name"><br>
+                <h3>Neue Kategorie erstellen</h3>
+                <form action="category.php" method="post">
+                    <label>Kategoriename</label><br>
+                    <input type="text" name="category_name" required><br>
+                    <button name="bt_create_category">Kategorie erstellen</button>
+                </form>
 
-                <button type="submit" name="bt_category">Kategoriename anlegen!</button>
+                <h3>Liste</h3>
 
-            </form>
+                 <?php $categories = $dba->getAllCategories();?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        foreach($categories as $c){
+                            echo '<tr>';
+                            echo '<td>' . htmlspecialchars($c->id) . '</td>';
+                            echo '<td>' . htmlspecialchars($c->name) . '</td>';
+                            echo '<td>';
+                            // Bearbeiten Link
+                            echo '<a href="edit_category.php?id='.$c->id.'">Bearbeiten</a> ';
+                            // Lösch-Formular
+                            echo '<form method="POST" action="category.php">';
+                            echo '<input type="hidden" name="id" value="' . htmlspecialchars($c->id) . '">';
+                            echo '<button name="delete_c">Löschen</button>';
+                            echo '</form>';
+                            echo '</td>';
+                            echo '</tr>';
+                        }
+                        ?>
+                    </tbody>
+                </table>
 
-            <h2>Bestehende Kategorien!</h2>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Titel</th>
-                        <th>Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $categories = $dba->getAllCategories();
-                    foreach ($categories as $category) {
-                        echo '<tr>';
-                        echo '<td>' . htmlspecialchars($category->id) . '</td>';
-                        echo '<td>' . htmlspecialchars($category->name) . '</td>';
-
-                        // Bearbeiten
-                        echo '<td>';
-                        echo '<a href="edit_category.php?id=' . htmlspecialchars($category->id) . '">Bearbeiten</a>';
-
-                        // Löschen
-                        echo '<form action="category.php" method="POST">';
-                        echo '<input type="hidden" name="id" value="'.$category->id.'">';
-                        echo '<button name="bt_delete">Löschen!</button>';
-                        echo '</form>';
-
-                        echo '</tr>';
-                    }
-                    ?>
-                </tbody>
-            </table>
-
-        </section>
+            </section>
     </main>
-</body>
 
+
+
+</body>
 </html>
